@@ -1,10 +1,12 @@
 package ml.shahidkamal.popularmovies.Models;
 
+import java.io.Serializable;
+
 /**
  * Created by shaah on 07-06-2018.
  */
 
-public class Movie {
+public class Movie implements Serializable{
     public String overview;
     public String releaseDate;
     public String orignalTitle;

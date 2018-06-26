@@ -63,6 +63,20 @@ public class TMDB {
         sendGet(context, url, handler);
     }
 
+    public static void getHighestRatedMovies(Context context, int page, ResponseHandler handler) {
+        Uri.Builder query = new Uri.Builder();
+        query.scheme("https")
+                .authority("api.themoviedb.org")
+                .appendPath("3").appendPath("movie").appendPath("top_rated")
+                .appendQueryParameter("api_key", context.getString(R.string.tmdb_api))
+                .appendQueryParameter("language", "en-US")
+                .appendQueryParameter("page", String.valueOf(page))
+                .build();
+
+        String url = query.toString();
+        sendGet(context, url, handler);
+    }
+
     public static ArrayList<Movie> parseResponse(JSONObject response) {
         ArrayList<Movie> moviesList = new ArrayList<>();
         try{
