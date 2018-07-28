@@ -16,7 +16,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ml.shahidkamal.popularmovies.Models.Movie;
+import ml.shahidkamal.popularmovies.Models.Reviews;
+import ml.shahidkamal.popularmovies.Models.Trailer;
 import ml.shahidkamal.popularmovies.R;
+import ml.shahidkamal.popularmovies.ReviewsActivity;
 
 /**
  * Created by shaah on 07-06-2018.
@@ -77,6 +80,7 @@ public class TMDB {
         sendGet(context, url, handler);
     }
 
+
     public static ArrayList<Movie> parseResponse(JSONObject response) {
         ArrayList<Movie> moviesList = new ArrayList<>();
         try{
@@ -93,7 +97,8 @@ public class TMDB {
                         movieJSONObject.getString("release_date"),
                         TMDB.POST_HOST + movieJSONObject.getString("poster_path"),
                         movieJSONObject.getString("vote_average"),
-                        genreIds
+                        genreIds,
+                        movieJSONObject.getString("id")
                 );
 
                 moviesList.add(movie);
@@ -103,5 +108,76 @@ public class TMDB {
             Log.e(TAG, "parseResponse: can't parse", error );
         }
         return moviesList;
+    }
+
+
+    public static ArrayList<Trailer> parseTrailersResponse(JSONObject response) {
+        ArrayList<Trailer> trailers = new ArrayList<>();
+        try{
+            JSONArray results = response.getJSONArray("results");
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject trailerJsonObject = (JSONObject) results.get(i);
+
+
+                Trailer trailer = new Trailer(
+                        trailerJsonObject.getString("name"),
+                        trailerJsonObject.getString("key")
+                );
+
+                trailers.add(trailer);
+
+            }
+        }catch (JSONException error){
+            Log.e(TAG, "parseTrailerResponse: can't parse", error );
+        }
+        return trailers;
+    }
+
+    public static void getTrailersFromMovieId(Context context, String movieId, ResponseHandler handler) {
+        Uri.Builder query = new Uri.Builder();
+        query.scheme("https")
+                .authority("api.themoviedb.org")
+                .appendPath("3").appendPath("movie").appendPath(movieId)
+                .appendPath("videos")
+                .appendQueryParameter("api_key", context.getString(R.string.tmdb_api))
+                .appendQueryParameter("language", "en-US")
+                .build();
+
+        String url = query.toString();
+        sendGet(context, url, handler);
+    }
+
+    public static void fetchReviews(Context context, String movieId, ResponseHandler handler) {
+        Uri.Builder query = new Uri.Builder();
+        query.scheme("https")
+                .authority("api.themoviedb.org")
+                .appendPath("3").appendPath("movie").appendPath(movieId)
+                .appendPath("reviews")
+                .appendQueryParameter("api_key", context.getString(R.string.tmdb_api))
+                .appendQueryParameter("language", "en-US")
+                .build();
+
+        String url = query.toString();
+        sendGet(context, url, handler);
+    }
+
+    public static ArrayList<Reviews> parseReviewResponse(JSONObject response) {
+        ArrayList<Reviews> reviews = new ArrayList<>();
+        try{
+            JSONArray results = response.getJSONArray("results");
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject reviewJsonObject = (JSONObject) results.get(i);
+
+                Reviews review = new Reviews(
+                        reviewJsonObject.getString("author"),
+                        reviewJsonObject.getString("content")
+                );
+
+                reviews.add(review);
+            }
+        }catch (JSONException error){
+            Log.e(TAG, "parseTrailerResponse: can't parse", error );
+        }
+        return reviews;
     }
 }

@@ -18,8 +18,14 @@
     <string name="img_desc_movie_poster">movie poster</string>
     <string name="filter_prompt">sort by</string>
     <string name="sort">Sort</string>
+    <string name="add_to_favourite">ADD TO FAVOURITE</string>
+    <string name="play_icon_for_trailer">play icon for trailer</string>
+    <string name="title_reviews"><underline>Reviews</underline></string>
+    <string name="no_reviews">No reviews yet!</string>
+    <string name="label_added_fav">ADDED TO FAV!</string>
     <string-array name="filter_spinner_dropdown">
         <item>Most Popular</item>
         <item>Highest Rated</item>
+        <item>Favourite Movies</item>
     </string-array>
 </resources>

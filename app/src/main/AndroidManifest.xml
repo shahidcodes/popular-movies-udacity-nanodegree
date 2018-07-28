@@ -3,6 +3,8 @@
     package="ml.shahidkamal.popularmovies">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
 
     <application
         android:allowBackup="true"
@@ -26,6 +28,13 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ml.shahidkamal.popularmovies.MainActivity" />
+        </activity>
+        <activity android:name=".ReviewsActivity"
+            android:parentActivityName=".MovieDetailsActivity"
+            android:theme="@style/AppTheme.ActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="ml.shahidkamal.popularmovies.MovieDetailsActivity" />
         </activity>
     </application>
 

@@ -4,5 +4,7 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="activity_bg_transparent">#73050a06</color>
+    <color name="textColorNormal">#FFFFFA</color>
+    <color name="reviews_activity_bg">#E640434E</color>
 
 </resources>

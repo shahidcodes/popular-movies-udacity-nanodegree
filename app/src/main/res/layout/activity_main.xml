@@ -48,6 +48,7 @@
             android:layout_marginBottom="0dp"
             android:layout_marginLeft="0dp"
             android:layout_marginStart="0dp"
+            android:background="@color/cardview_dark_background"
             android:visibility="gone" />
 
         <ProgressBar

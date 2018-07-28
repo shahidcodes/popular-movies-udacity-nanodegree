@@ -1,7 +1,10 @@
 package ml.shahidkamal.popularmovies;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -24,6 +27,7 @@ import ml.shahidkamal.popularmovies.API.ResponseHandler;
 import ml.shahidkamal.popularmovies.API.TMDB;
 import ml.shahidkamal.popularmovies.Adapters.EndlessScrollListener;
 import ml.shahidkamal.popularmovies.Adapters.MovieGridAdapter;
+import ml.shahidkamal.popularmovies.DB.DBHelper;
 import ml.shahidkamal.popularmovies.Models.Movie;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     final int TYPE_POPULAR = 121;
     final int TYPE_RATED = 122;
+    final int TYPE_FAV = 123;
     int CURRENT_TYPE = TYPE_POPULAR;
 
     RecyclerView recyclerView;
@@ -64,59 +69,72 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "onLoadMore: page" + page + " type " + CURRENT_TYPE);
                 if (CURRENT_TYPE == TYPE_POPULAR)
                     getPopularMovies(page);
-                else getHighestRatedMovies(page);
+                else if (CURRENT_TYPE == TYPE_RATED) getHighestRatedMovies(page);
             }
         };
         recyclerView.addOnScrollListener(endlessScrollListener);
-        getPopularMovies(page);
+        if (isNetworkAvailable())
+            getPopularMovies(page);
+        else getFavMovies();
     }
 
     public void getPopularMovies(final int page) {
         TMDB.getPopularMovies(this, page, new ResponseHandler() {
             @Override
             public void onSuccess(JSONObject response) {
-                Log.d(TAG, "onSuccess: " + response);
+                Log.d(TAG, "Popular: " + response);
                 ArrayList<Movie> movies = TMDB.parseResponse(response);
-                if(page == 1) movieList.clear();
+                if (page == 1) movieList.clear();
                 movieList.addAll(movies);
                 adapter.notifyDataSetChanged();
-                Log.d(TAG, "onSuccess: length: " + movieList.size());
-                changeProgressbarVisiblity(false);
+                Log.d(TAG, "Popular: length: " + movieList.size());
+                hideProgressbar();
             }
 
             @Override
             public void onError(VolleyError error) {
-                Log.e(TAG, "onError: " + error.getMessage(), error );
+                Log.e(TAG, "onError: " + error.getMessage(), error);
+                hideProgressbar();
             }
         });
+    }
+
+    private void getFavMovies() {
+        ArrayList<Movie> movies = DBHelper.getFavMovies(this);
+        Log.d(TAG, "getFavMovies: " + movies.size());
+        movieList.clear();
+        movieList.addAll(movies);
+        adapter.notifyDataSetChanged();
+        hideProgressbar();
     }
 
     private void getHighestRatedMovies(final int page) {
         TMDB.getHighestRatedMovies(this, page, new ResponseHandler() {
             @Override
             public void onSuccess(JSONObject response) {
-                Log.d(TAG, "onSuccess: " + response);
+                Log.d(TAG, "onSuccess: High Rated " + response);
                 ArrayList<Movie> movies = TMDB.parseResponse(response);
-                Log.d(TAG, "onSuccess: " + movies.size());
-                if(page ==1) movieList.clear();
+                Log.d(TAG, "onSuccess: High Rated " + movies.size());
+                if (page == 1) movieList.clear();
                 movieList.addAll(movies);
                 adapter.notifyDataSetChanged();
-                changeProgressbarVisiblity(false);
+                hideProgressbar();
             }
 
             @Override
             public void onError(VolleyError error) {
                 Toast.makeText(MainActivity.this, "Can't fetch movies", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "onError: " + error.getMessage(), error );
+                Log.e(TAG, "onError: " + error.getMessage(), error);
+                hideProgressbar();
             }
         });
     }
 
     private void changeProgressbarVisiblity(Boolean show) {
-        if (show){
+        if (show) {
             progressBar.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
-        }else{
+        } else {
             loadMoreProgressbar.setVisibility(View.GONE);
             progressBar.setVisibility(View.GONE);
             recyclerView.setVisibility(View.VISIBLE);
@@ -124,7 +142,18 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    View.OnClickListener recyclerViewClickListener = new View.OnClickListener(){
+
+    private void showProgressbar() {
+        Log.d(TAG, "showProgressbar");
+        changeProgressbarVisiblity(true);
+    }
+
+    private void hideProgressbar() {
+        Log.d(TAG, "hideProgressbar");
+        changeProgressbarVisiblity(false);
+    }
+
+    View.OnClickListener recyclerViewClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             int position = recyclerView.getChildAdapterPosition(view);
@@ -141,7 +170,8 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener filterBtnOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            showFilterDialog();
+            if(isNetworkAvailable()) showFilterDialog();
+            else Toast.makeText(MainActivity.this, "Bro! I need internet connection", Toast.LENGTH_SHORT).show();
         }
     };
 
@@ -149,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
         View view = LayoutInflater.from(this).inflate(R.layout.filter_dialog_layout, null, false);
 
         final Spinner sortSpinner = view.findViewById(R.id.filter_spinner);
-        final AlertDialog.Builder dialog= new AlertDialog.Builder(this);
+        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         final DialogInterface dialogInterface = dialog.setTitle("Filter")
                 .setView(view)
                 .show();
@@ -160,12 +190,15 @@ public class MainActivity extends AppCompatActivity {
                 page = 1;
                 endlessScrollListener.resetPreviousItemCache();
                 String selectedItem = String.valueOf(sortSpinner.getSelectedItem());
-                Log.d(TAG, "onClick: " + selectedItem);
-                changeProgressbarVisiblity(true);
-                if ("Highest Rated".equals(selectedItem)){
+                Log.d(TAG, "Sort Btn : " + selectedItem);
+                showProgressbar();
+                if ("Highest Rated".equals(selectedItem)) {
                     CURRENT_TYPE = TYPE_RATED;
                     getHighestRatedMovies(page);
-                }else{
+                } else if ("Favourite Movies".equals(selectedItem)) {
+                    CURRENT_TYPE = TYPE_FAV;
+                    getFavMovies();
+                } else {
                     CURRENT_TYPE = TYPE_POPULAR;
                     getPopularMovies(page);
                 }
@@ -177,6 +210,13 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
 
 }

@@ -7,6 +7,7 @@ import java.io.Serializable;
  */
 
 public class Movie implements Serializable{
+    public String movieId;
     public String overview;
     public String releaseDate;
     public String orignalTitle;
@@ -15,7 +16,7 @@ public class Movie implements Serializable{
     public String voteAverage;
     public String[] genreIds;
 
-    public Movie(String orignalTitle, String movieTitle, String overview, String releaseDate, String poster, String voteAverage, String[] genreIds) {
+    public Movie(String orignalTitle, String movieTitle, String overview, String releaseDate, String poster, String voteAverage, String[] genreIds, String movieId) {
         this.overview = overview;
         this.releaseDate = releaseDate;
         this.orignalTitle = orignalTitle;
@@ -23,5 +24,15 @@ public class Movie implements Serializable{
         this.poster = poster;
         this.voteAverage = voteAverage;
         this.genreIds = genreIds;
+        this.movieId = movieId;
+    }
+
+    public Movie(String orignalTitle, String overview, String releaseDate, String poster, String voteAverage, String movieId) {
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+        this.orignalTitle = orignalTitle;
+        this.poster = poster;
+        this.voteAverage = voteAverage;
+        this.movieId = movieId;
     }
 }
