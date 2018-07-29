@@ -1,8 +1,10 @@
 package ml.shahidkamal.popularmovies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -33,8 +35,11 @@ import ml.shahidkamal.popularmovies.API.ResponseHandler;
 import ml.shahidkamal.popularmovies.API.TMDB;
 import ml.shahidkamal.popularmovies.Adapters.TrailerAdapter;
 import ml.shahidkamal.popularmovies.DB.DBHelper;
+import ml.shahidkamal.popularmovies.DB.MyContract;
 import ml.shahidkamal.popularmovies.Models.Movie;
 import ml.shahidkamal.popularmovies.Models.Trailer;
+
+import static ml.shahidkamal.popularmovies.DB.MyContract.FavMovies.CONTENT_URI;
 
 public class MovieDetailsActivity extends AppCompatActivity {
     private static final String TAG = "MovieDetailsActivity";
@@ -124,8 +129,16 @@ public class MovieDetailsActivity extends AppCompatActivity {
     }
 
     private void addToFav(Movie movie) {
-        boolean status = DBHelper.addToFav(this, movie);
-        if (status) {
+//        boolean status = DBHelper.addToFav(this, movie);
+        ContentValues values = new ContentValues();
+        values.put(MyContract.FavMovies.COLUMN_MOVIE_NAME, movie.orignalTitle);
+        values.put(MyContract.FavMovies.COLUMN_MOVIE_ID, movie.movieId);
+        values.put(MyContract.FavMovies.COLUMN_MOVIE_OVERVIEW, movie.overview);
+        values.put(MyContract.FavMovies.COLUMN_MOVIE_POSTER, movie.poster);
+        values.put(MyContract.FavMovies.COLUMN_MOVIE_VOTE, movie.voteAverage);
+        values.put(MyContract.FavMovies.COLUMN_MOVIE_RELEASE, movie.releaseDate);
+        Uri added = getContentResolver().insert(CONTENT_URI, values);
+        if (added != null) {
             Toast.makeText(this, "ADDED TO FAV!", Toast.LENGTH_SHORT).show();
             addFavbtn.setText(R.string.label_added_fav);
         }else{

@@ -36,6 +36,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ml.shahidkamal.popularmovies.MovieDetailsActivity" />
         </activity>
+        
+        <provider
+            android:exported="false"
+            android:authorities="ml.shahidkamal.popularmovies"
+            android:name=".ContentProvider.MovieProvider" />
+        
     </application>
 
 </manifest>

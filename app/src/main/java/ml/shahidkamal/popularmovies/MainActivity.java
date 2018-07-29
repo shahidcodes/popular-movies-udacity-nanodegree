@@ -3,8 +3,10 @@ package ml.shahidkamal.popularmovies;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -27,8 +29,11 @@ import ml.shahidkamal.popularmovies.API.ResponseHandler;
 import ml.shahidkamal.popularmovies.API.TMDB;
 import ml.shahidkamal.popularmovies.Adapters.EndlessScrollListener;
 import ml.shahidkamal.popularmovies.Adapters.MovieGridAdapter;
+import ml.shahidkamal.popularmovies.ContentProvider.MovieProvider;
 import ml.shahidkamal.popularmovies.DB.DBHelper;
 import ml.shahidkamal.popularmovies.Models.Movie;
+
+import static ml.shahidkamal.popularmovies.DB.MyContract.FavMovies.CONTENT_URI;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
@@ -100,7 +105,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getFavMovies() {
-        ArrayList<Movie> movies = DBHelper.getFavMovies(this);
+        ArrayList<Movie> movies;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Cursor cursor = getContentResolver().query(CONTENT_URI, null, null, null, null, null);
+            movies = MovieProvider.getMovieListFromCursor(cursor);
+        }else{
+            movies = DBHelper.getFavMovies(this);
+        }
+
         Log.d(TAG, "getFavMovies: " + movies.size());
         movieList.clear();
         movieList.addAll(movies);
